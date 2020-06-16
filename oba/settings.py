@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # my apps
     'user',
     'businesses',
+    'transactions',
 
     # Other apps
     'rest_framework',

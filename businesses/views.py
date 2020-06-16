@@ -31,4 +31,4 @@ class BusinessDetails(generics.RetrieveUpdateDestroyAPIView):
     if self.request.user.is_superuser:
       return get_object_or_404(Business, id=self.kwargs.get('pk'))
     else:
-            return get_object_or_404(Business, id=self.kwargs.get('pk'), owner=self.request.user)
+      return get_object_or_404(Business, id=self.kwargs.get('pk'), owner=self.request.user)
