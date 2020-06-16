@@ -36,3 +36,11 @@ class FileUploadView(generics.GenericAPIView):
     return Response({
       'message': 'CSV uploaded and saved into database successfully'
     }, status=HTTP_201_CREATED)
+
+class TransactionsList(generics.ListAPIView):
+  serializer_class = TransactionSerializer
+  permission_classes = (IsAuthenticated,)
+
+  def get_queryset(self):
+    business = get_object_or_404(Business, id=self.kwargs.get('business_id'))
+    return business.transactions.all()

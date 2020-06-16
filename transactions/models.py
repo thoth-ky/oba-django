@@ -18,8 +18,6 @@ STATUSES = (
 )
 
 
-
-
 class Transaction(models.Model):
   business = models.ForeignKey(Business, on_delete=models.PROTECT, related_name='transactions')
 
@@ -36,7 +34,3 @@ class Transaction(models.Model):
 
   def __str__(self):
     return f'Transaction {self.transaction_id} ID: {self.id}'
-
-
-
-
