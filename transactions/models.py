@@ -19,7 +19,7 @@ STATUSES = (
 
 
 class Transaction(models.Model):
-  business = models.ForeignKey(Business, on_delete=models.PROTECT, related_name='transactions')
+  business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='transactions')
 
   transaction_type = models.CharField(max_length=15, choices=TRANSACTIONS)
   transaction_id = models.IntegerField()

@@ -17,7 +17,7 @@ ENTITY_CHOICES = (('R', 'Retailer'), ('S', 'Supplier'))
 ACCOUNTS_SOFTWARE = (('QB', 'Quickbooks'), ('EX', 'Excel SpreadSheets'))
 
 class Business(models.Model):
-  owner = models.ForeignKey(User, related_name='businesses', on_delete=models.PROTECT)
+  owner = models.ForeignKey(User, related_name='businesses', on_delete=models.CASCADE)
   name = models.CharField(max_length=25, help_text='Name of business')
   business_abbreviation = models.CharField(
     max_length=5, help_text='Business name abbreviation')
@@ -57,12 +57,12 @@ class Business(models.Model):
     items_ordered_by_quantity =  self.transactions.filter(
       transaction_type='Order', transaction_date__range=date_range
       ).values('item', 'transaction_type').annotate(
-      total_quantity=Sum('quantity')).order_by('-total_quantity')
+      total=Sum('quantity')).order_by('-total')
 
     items_billed_by_quantity =  self.transactions.filter(
       transaction_type='Bill', transaction_date__range=date_range
       ).values('item', 'transaction_type').annotate(
-      total_quantity=Sum('quantity')).order_by('-total_quantity')
+      total=Sum('quantity')).order_by('-total')
     return {
       'items_ordered_by_quantity': items_ordered_by_quantity[:5],
       'items_billed_by_quantity': items_billed_by_quantity[:5],
@@ -72,12 +72,12 @@ class Business(models.Model):
     items_ordered_by_value =  self.transactions.filter(
       transaction_type='Order', transaction_date__range=date_range
       ).values('item', 'transaction_type').annotate(
-      total_value=Sum('total_transaction_amount')).order_by('-total_value')
+      total=Sum('total_transaction_amount')).order_by('-total')
 
     items_billed_by_value =  self.transactions.filter(
       transaction_type='Bill', transaction_date__range=date_range
       ).values('item', 'transaction_type').annotate(
-      total_value=Sum('total_transaction_amount')).order_by('-total_value')
+      total=Sum('total_transaction_amount')).order_by('-total')
     return {
       'items_ordered_by_value': items_ordered_by_value[:5],
       'items_billed_by_value': items_billed_by_value[:5],
