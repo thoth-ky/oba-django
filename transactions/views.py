@@ -18,7 +18,7 @@ class FileUploadView(generics.GenericAPIView):
 
   def get_permissions(self):
     business = get_object_or_404(Business, id=self.kwargs.get('business_id'))
-    if business not in  self.request.user.businesses.all():
+    if business not in  self.request.user.businesses.all() and not self.request.user.is_superuser:
       raise PermissionDenied
     else:
       self.permission_classes = [IsAuthenticated,]
