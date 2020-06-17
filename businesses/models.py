@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django_countries.fields import CountryField
 from user.models import User
 
@@ -17,7 +19,8 @@ ACCOUNTS_SOFTWARE = (('QB', 'Quickbooks'), ('EX', 'Excel SpreadSheets'))
 class Business(models.Model):
   owner = models.ForeignKey(User, related_name='businesses', on_delete=models.PROTECT)
   name = models.CharField(max_length=25, help_text='Name of business')
-  business_abbreviation = models.CharField(max_length=5, help_text='Business name abbreviation')
+  business_abbreviation = models.CharField(
+    max_length=5, help_text='Business name abbreviation')
   company_address = models.CharField(max_length=50, help_text='Address of business')
   
   country = CountryField(default='KE')
@@ -31,5 +34,52 @@ class Business(models.Model):
   def aggregate_values_by_type(self, date_range, type, aggregate_over):
     return self.transactions.filter(
       transaction_date__range=date_range, transaction_type=type
-      ).aggregate(models.Sum(aggregate_over))
+      ).aggregate(total=Coalesce(Sum(aggregate_over),0))
+  
+  def cash_flow(self, date_range):
+    total_orders = self.aggregate_values_by_type(
+      date_range, 'Order', 'total_transaction_amount')
+    
+    total_order_payments = self.aggregate_values_by_type(
+      date_range, 'Order Payment', 'total_transaction_amount')
+    
+    total_bills = self.aggregate_values_by_type(
+      date_range, 'Bill', 'total_transaction_amount')
+    total_bill_payments = self.aggregate_values_by_type(
+      date_range, 'Bill Payment', 'total_transaction_amount')
+    
+    return {
+      'amount_in': total_orders['total'] - total_order_payments['total'],
+      'bills_due': total_bills['total']- total_bill_payments['total']
+    }
+
+  def top_five_items_by_quantity(self, date_range):
+    items_ordered_by_quantity =  self.transactions.filter(
+      transaction_type='Order', transaction_date__range=date_range
+      ).values('item', 'transaction_type').annotate(
+      total_quantity=Sum('quantity')).order_by('-total_quantity')
+
+    items_billed_by_quantity =  self.transactions.filter(
+      transaction_type='Bill', transaction_date__range=date_range
+      ).values('item', 'transaction_type').annotate(
+      total_quantity=Sum('quantity')).order_by('-total_quantity')
+    return {
+      'items_ordered_by_quantity': items_ordered_by_quantity[:5],
+      'items_billed_by_quantity': items_billed_by_quantity[:5],
+    }
+
+  def top_five_items_by_value(self, date_range):
+    items_ordered_by_value =  self.transactions.filter(
+      transaction_type='Order', transaction_date__range=date_range
+      ).values('item', 'transaction_type').annotate(
+      total_value=Sum('total_transaction_amount')).order_by('-total_value')
+
+    items_billed_by_value =  self.transactions.filter(
+      transaction_type='Bill', transaction_date__range=date_range
+      ).values('item', 'transaction_type').annotate(
+      total_value=Sum('total_transaction_amount')).order_by('-total_value')
+    return {
+      'items_ordered_by_value': items_ordered_by_value[:5],
+      'items_billed_by_value': items_billed_by_value[:5],
+    }
 

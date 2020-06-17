@@ -34,7 +34,7 @@ class BusinessDetails(generics.RetrieveUpdateDestroyAPIView):
 class BusinessTransactions(generics.RetrieveAPIView):
   def get_permissions(self):
     business = get_object_or_404(Business, id=self.kwargs.get('pk'))
-    if business not in  self.request.user.businesses.all():
+    if business not in  self.request.user.businesses.all() and not self.request.user.is_superuser:
       raise PermissionDenied
     else:
       self.permission_classes = [IsAuthenticated,]
@@ -42,24 +42,22 @@ class BusinessTransactions(generics.RetrieveAPIView):
   
 
   def get(self, *args, **kwargs):
+    # get business
     business = get_object_or_404(Business, id=self.kwargs.get('pk'))
-    date_range = ['2020-01-01', '2020-12-31']
-    total_orders = business.transactions.filter(
-      transaction_date__range=date_range, transaction_type='Order'
-      ).aggregate(Sum('total_transaction_amount'))
-    total_order_payments = business.transactions.filter(
-      transaction_date__range=date_range, transaction_type='Order payment'
-      ).aggregate(Sum('total_transaction_amount'))
-    
-    total_bills = business.transactions.filter(
-      transaction_date__range=date_range, transaction_type='Bill'
-      ).aggregate(Sum('total_transaction_amount'))
-    total_bill_payments = business.transactions.filter(
-      transaction_date__range=date_range, transaction_type='Bill Payment'
-      ).aggregate(Sum('total_transaction_amount'))
+
+    # get params
+    start_date = self.request.GET.get('from') or self.kwargs['from']
+    end_date = self.request.GET.get('to') or self.kwargs['to']
+    date_range = [start_date, end_date]
+
+    # get summaries
+    cash_flow = business.cash_flow(date_range)
+    top_five_by_quantity = business.top_five_items_by_quantity(date_range)
+    top_five_by_value = business.top_five_items_by_value(date_range)
     
     return Response({
-      'amount_in': total_orders.get('total_transaction_amount__sum') or 0 - total_order_payments.get('total_transaction_amount__sum') or 0,
-      'bills_due': total_bills.get('total_transaction_amount__sum') or 0 - total_bill_payments.get('total_transaction_amount__sum') or 0
+      'cash_flow': cash_flow,
+      'top_five_by_quantity': top_five_by_quantity,
+      'top_five_by_value': top_five_by_value,
     })
 
