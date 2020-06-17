@@ -25,7 +25,8 @@ SECRET_KEY = 'jf!bo6+^21rbi%a3l@=vly0%6o^4u@@$g*=ybz4@mp@2==)#_('
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+CORS_ORIGIN_ALLOW_ALL = True
 
 
 # Application definition
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
     # Other apps
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 ]
 
 # REST_FRAMEWORK
@@ -65,6 +67,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'oba.urls'

@@ -28,15 +28,17 @@ class AuthenticateUser(APIView):
 
   def post(self, request, format=None):
     serializer = AuthSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
+    if serializer.is_valid():
+      user = serializer.validated_data['user']
+      token, created = Token.objects.get_or_create(user=user)
 
-    user = serializer.validated_data['user']
-    token, created = Token.objects.get_or_create(user=user)
-
+      return Response({
+        'username': user.username,
+        'email': user.email,
+        'token': token.key,
+        'user_id': user.id,
+        'created': created,
+      })
     return Response({
-      'username': user.username,
-      'email': user.email,
-      'token': token.key,
-      'user_id': user.id,
-      'created': created,
+      'errors': serializer.errors,
     })

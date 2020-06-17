@@ -27,4 +27,9 @@ class Business(models.Model):
 
   def __str__(self):
     return 'Business {}'.format(self.business_abbreviation)
+  
+  def aggregate_values_by_type(self, date_range, type, aggregate_over):
+    return self.transactions.filter(
+      transaction_date__range=date_range, transaction_type=type
+      ).aggregate(models.Sum(aggregate_over))
 
