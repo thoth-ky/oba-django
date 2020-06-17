@@ -11,19 +11,14 @@ from businesses.models import Business
 from businesses.serializers import BusinessSerializer
 
 class BusinessList(generics.ListCreateAPIView):
-  permission_classes =( IsAuthenticated,)
   serializer_class = BusinessSerializer
   queryset = Business.objects.all()
+  permission_classes = [IsAuthenticated, ]
 
-  
-  def get_permissions(self):
-    method = self.request.method
-    if method == 'GET':
-      self.permission_classes = [IsAdminUser,]
-    else:
-      self.permission_classes = [IsAuthenticated,]
-
-    return super(BusinessList, self).get_permissions()
+  def get_queryset(self):
+    if self.request.user.is_superuser:
+      return Business.objects.all()
+    return Business.objects.filter(owner=self.request.user)
 
 class BusinessDetails(generics.RetrieveUpdateDestroyAPIView):
   serializer_class = BusinessSerializer
