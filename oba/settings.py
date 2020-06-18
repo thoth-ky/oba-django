@@ -30,7 +30,7 @@ ALLOWED_HOSTS = [
     '0.0.0.0',
     'localhost',
     '127.0.0.1',
-    'oba-be.herokuapp',
+    'oba-be.herokuapp.com',
     ]
 CORS_ORIGIN_ALLOW_ALL = True
 
