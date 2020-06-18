@@ -15,6 +15,9 @@ sqlparse = "==0.3.1"
 Django = "==3.0.7"
 django-countries = "*"
 django-cors-middleware = "*"
+gunicorn = "*"
+whitenoise = "*"
+dj-database-url = "*"
 
 [requires]
 python_version = "3.7"
